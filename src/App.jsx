@@ -14,6 +14,7 @@ import MeetingHistory from "./pages/MeetingHistory";
 import MeetingDetails from "./pages/MeetingDetails";
 import AISummary from "./pages/AISummary";
 import Recording from "./pages/Recording";
+import AnalyticsDashboard from "./pages/AnalyticsDashboard";
 
 function App() {
   return (
@@ -33,6 +34,7 @@ function App() {
         <Route path="/meeting-details" element={<MeetingDetails />} />
         <Route path="/ai-summary" element={<AISummary />} />
         <Route path="/recording" element={<Recording />} />
+        <Route path="/analytics"element={<AnalyticsDashboard />} />
       </Routes>
     </BrowserRouter>
   );
