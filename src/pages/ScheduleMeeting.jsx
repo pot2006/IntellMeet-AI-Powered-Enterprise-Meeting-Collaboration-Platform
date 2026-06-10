@@ -39,7 +39,7 @@ function ScheduleMeeting() {
     console.log("Meeting Scheduled:", meetingData);
 
     setTimeout(() => {
-      navigate(fromPage);
+      navigate("/dashboard");
     }, 3000);
   };
 
@@ -110,7 +110,7 @@ function ScheduleMeeting() {
             </button>
 
             <button
-              onClick={() => navigate(fromPage)}
+              onClick={() => navigate("/dashboard")}
               className="w-full mt-3 bg-slate-700 hover:bg-slate-600 py-3 rounded-lg font-semibold text-white transition"
             >
               Back
