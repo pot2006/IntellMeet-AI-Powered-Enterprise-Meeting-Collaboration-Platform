@@ -1,42 +1,42 @@
 import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import API from "../services/api";
 
 function CreateMeeting() {
   const navigate = useNavigate();
-  const location = useLocation();
-
-  const from = location.state?.from || "/dashboard";
 
   const [meetingTitle, setMeetingTitle] = useState("");
   const [description, setDescription] = useState("");
   const [meetingDate, setMeetingDate] = useState("");
   const [meetingType, setMeetingType] = useState("Private");
 
-  const meetingId =
-    "INT-" + Math.floor(100000 + Math.random() * 900000);
-
-  const handleCreateMeeting = () => {
+  const handleCreateMeeting = async () => {
     if (!meetingTitle.trim()) {
       alert("Please enter Meeting Title");
       return;
     }
 
-    navigate("/meetingroom", {
-      state: {
-        meetingTitle,
+    try {
+      const res = await API.post("/meetings", {
+        title: meetingTitle,
         description,
-        meetingDate,
-        meetingType,
-        meetingId,
-        from,
-      },
-    });
-  };
+      });
 
+      navigate("/meetingroom", {
+        state: {
+          meetingId: res.data._id,
+          meetingTitle: res.data.title,
+          description: res.data.description,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+      alert("Failed to create meeting");
+    }
+  };
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center px-4">
       <div className="w-full max-w-lg bg-slate-900 border border-cyan-500 rounded-2xl p-8 shadow-2xl">
-
         <h1 className="text-4xl font-bold text-center text-white mb-8">
           Create Meeting
         </h1>
@@ -77,15 +77,6 @@ function CreateMeeting() {
         </select>
 
         {/* Meeting ID */}
-        <div className="bg-slate-800 p-4 rounded-lg mb-6">
-          <p className="text-gray-400 text-sm">
-            Generated Meeting ID
-          </p>
-
-          <h3 className="text-cyan-400 font-bold text-lg">
-            {meetingId}
-          </h3>
-        </div>
 
         {/* Create Button */}
         <button

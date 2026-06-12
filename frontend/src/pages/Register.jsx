@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import API from "../services/api";
 
 function Register() {
   const navigate = useNavigate();
@@ -9,23 +10,30 @@ function Register() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleRegister = () => {
-    if (!name || !email || !password) {
-      setError("Please fill all fields");
-      return;
+  const handleRegister = async () => {
+    try {
+      if (!name || !email || !password) {
+        setError("Please fill all fields");
+        return;
+      }
+
+      const res = await API.post("/auth/register", {
+        name,
+        email,
+        password,
+      });
+
+      localStorage.setItem("token", res.data.token);
+
+      navigate("/dashboard");
+    } catch (error) {
+      setError(error.response?.data?.message || "Registration failed");
     }
-
-    setError("");
-    navigate("/dashboard");
   };
-
   return (
     <div className="min-h-screen bg-slate-950 text-white flex justify-center items-center">
       <div className="bg-slate-900 p-8 rounded-xl w-96">
-
-        <h1 className="text-3xl font-bold mb-6 text-center">
-          Register
-        </h1>
+        <h1 className="text-3xl font-bold mb-6 text-center">Register</h1>
 
         <input
           type="text"
@@ -51,11 +59,7 @@ function Register() {
           className="w-full p-3 mb-2 rounded bg-slate-800"
         />
 
-        {error && (
-          <p className="text-red-400 mb-4 text-sm">
-            {error}
-          </p>
-        )}
+        {error && <p className="text-red-400 mb-4 text-sm">{error}</p>}
 
         <button
           onClick={handleRegister}
@@ -63,7 +67,6 @@ function Register() {
         >
           Register
         </button>
-
       </div>
     </div>
   );
