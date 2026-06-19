@@ -12,7 +12,7 @@ function MeetingRoom() {
   const localVideoRef = useRef(null);
 
   const peerConnection = useRef(null);
-
+  const hasCreatedOffer = useRef(false);
   const localStream = useRef(null);
   const remoteVideoRef = useRef(null);
   const meetingId = location.state?.meetingId || location.state?.meeting?._id;
@@ -27,7 +27,9 @@ function MeetingRoom() {
         });
         localStream.current = stream;
 
-        localVideoRef.current.srcObject = stream;
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = stream;
+        }
         peerConnection.current = new RTCPeerConnection({
           iceServers: [
             {
@@ -35,28 +37,54 @@ function MeetingRoom() {
             },
           ],
         });
+        peerConnection.current.onicecandidate = (event) => {
+          if (event.candidate) {
+            socket.emit("iceCandidate", {
+              roomId: meetingId,
+
+              candidate: event.candidate,
+            });
+          }
+        };
         stream.getTracks().forEach((track) => {
           peerConnection.current.addTrack(track, stream);
         });
         peerConnection.current.ontrack = (event) => {
+          console.log("Remote Stream Received");
           const remoteStream = event.streams[0];
 
-          remoteVideoRef.current.srcObject = remoteStream;
+          if (remoteVideoRef.current) {
+            remoteVideoRef.current.srcObject = remoteStream;
+          }
         };
-        const offer = await peerConnection.current.createOffer();
-
-        await peerConnection.current.setLocalDescription(offer);
-
-        socket.emit("offer", {
-          roomId: meetingId,
-          offer,
-        });
       } catch (err) {
         console.log(err);
       }
     };
 
     startCamera();
+  }, []);
+  useEffect(() => {
+    socket.on("iceCandidate", async (data) => {
+      console.log("ICE Candidate Received");
+
+      try {
+        if (
+          peerConnection.current &&
+          peerConnection.current.remoteDescription
+        ) {
+          await peerConnection.current.addIceCandidate(
+            new RTCIceCandidate(data.candidate),
+          );
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    });
+
+    return () => {
+      socket.off("iceCandidate");
+    };
   }, []);
 
   const [messages, setMessages] = useState([]);
@@ -117,6 +145,8 @@ function MeetingRoom() {
     socket.on("offer", async (data) => {
       console.log("Offer Received");
 
+      if (!peerConnection.current) return;
+
       await peerConnection.current.setRemoteDescription(
         new RTCSessionDescription(data.offer),
       );
@@ -127,13 +157,52 @@ function MeetingRoom() {
 
       socket.emit("answer", {
         roomId: meetingId,
-
         answer,
       });
     });
 
     return () => {
       socket.off("offer");
+    };
+  }, []);
+  useEffect(() => {
+    socket.on("answer", async (data) => {
+      console.log("Answer Received");
+
+      if (!peerConnection.current) return;
+
+      await peerConnection.current.setRemoteDescription(
+        new RTCSessionDescription(data.answer),
+      );
+    });
+
+    return () => {
+      socket.off("answer");
+    };
+  }, []);
+
+  useEffect(() => {
+    socket.on("ready", async () => {
+      console.log("Peer Ready");
+
+      if (!peerConnection.current) return;
+
+      if (hasCreatedOffer.current) return;
+
+      hasCreatedOffer.current = true;
+
+      const offer = await peerConnection.current.createOffer();
+
+      await peerConnection.current.setLocalDescription(offer);
+
+      socket.emit("offer", {
+        roomId: meetingId,
+        offer,
+      });
+    });
+
+    return () => {
+      socket.off("ready");
     };
   }, []);
 

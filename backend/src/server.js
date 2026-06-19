@@ -28,6 +28,12 @@ io.on("connection", (socket) => {
     socket.join(roomId);
 
     console.log(`${socket.id} joined room ${roomId}`);
+
+    const clients = io.sockets.adapter.rooms.get(roomId);
+
+    if (clients && clients.size > 1) {
+      socket.to(roomId).emit("ready");
+    }
   });
 
   // Chat
@@ -37,16 +43,19 @@ io.on("connection", (socket) => {
 
   // WebRTC Offer
   socket.on("offer", (data) => {
+    console.log("OFFER");
     socket.to(data.roomId).emit("offer", data);
   });
 
   // WebRTC Answer
   socket.on("answer", (data) => {
+    console.log("ANSWER");
     socket.to(data.roomId).emit("answer", data);
   });
 
   // ICE Candidate
   socket.on("iceCandidate", (data) => {
+    console.log("ICE");
     socket.to(data.roomId).emit("iceCandidate", data);
   });
 
