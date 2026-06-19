@@ -1,13 +1,20 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import API from "../services/api";
+import { useTheme } from "../context/ThemeContext";
+import { useTranslation } from "react-i18next";
+
 function Dashboard() {
   const navigate = useNavigate();
+  const { theme } = useTheme();
+  const { t } = useTranslation();
+
   const [stats, setStats] = useState({
     totalMeetings: 0,
     liveMeetings: 0,
     participants: 0,
   });
+
   const [meetings, setMeetings] = useState([]);
 
   useEffect(() => {
@@ -25,160 +32,293 @@ function Dashboard() {
 
     fetchData();
   }, []);
+
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div
+      className={`min-h-screen ${
+        theme === "dark"
+          ? "bg-slate-950 text-white"
+          : "bg-white text-black"
+      }`}
+    >
       {/* Navbar */}
-      <div className="flex justify-between items-center px-8 py-5 border-b border-slate-800">
-        <h1 className="text-3xl font-bold text-cyan-400">IntelliMeet</h1>
-        <div className="flex gap-3">
+      <div
+        className={`flex flex-col md:flex-row justify-between items-center gap-4 px-4 md:px-8 py-5 border-b ${
+          theme === "dark"
+            ? "border-slate-800"
+            : "border-gray-300"
+        }`}
+      >
+        <h1 className="text-3xl font-bold text-cyan-400">
+          IntelliMeet
+        </h1>
+
+        <div className="flex flex-wrap justify-center gap-3">
           <button
             onClick={() => navigate("/notifications")}
-            className="bg-slate-800 px-4 py-2 rounded-lg"
+            className={`px-4 py-2 rounded-lg ${
+              theme === "dark"
+                ? "bg-slate-800"
+                : "bg-gray-200"
+            }`}
           >
-            Notifications
+            {t("notifications")}
           </button>
+
           <button
             onClick={() => navigate("/analytics")}
-            className="bg-purple-500 px-6 py-3 rounded-xl"
+            className="bg-purple-500 px-6 py-3 rounded-xl text-white"
           >
-            Analytics
+            {t("analytics")}
           </button>
+
           <button
             onClick={() => navigate("/")}
-            className="bg-red-500 px-4 py-2 rounded-lg"
+            className="bg-red-500 px-4 py-2 rounded-lg text-white"
           >
-            Logout
+            {t("logout")}
           </button>
+
           <button
             onClick={() => navigate("/profile")}
-            className="bg-slate-800 px-4 py-2 rounded-lg"
+            className={`px-4 py-2 rounded-lg ${
+              theme === "dark"
+                ? "bg-slate-800"
+                : "bg-gray-200"
+            }`}
           >
-            Profile
+            {t("profile")}
           </button>
         </div>
       </div>
 
       <div className="p-8">
-        {/* Heading */}
-        <h2 className="text-4xl font-bold mb-8">Dashboard</h2>
-        <div className="mt-8 mb-8"></div>
-      </div>
+        <h2 className="text-3xl md:text-4xl font-bold mb-8">
+          {t("dashboard")}
+        </h2>
 
-      {/* Stats Cards */}
-      <div className="grid md:grid-cols-4 gap-6">
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <h3 className="text-gray-400">Total Meetings</h3>
-          <p className="text-4xl font-bold mt-3">{stats.totalMeetings}</p>{" "}
-        </div>
-
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <h3 className="text-gray-400">Live Meetings</h3>
-          <p className="text-4xl font-bold mt-3">{stats.liveMeetings}</p>{" "}
-        </div>
-
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <h3 className="text-gray-400">Participants</h3>
-          <p className="text-4xl font-bold mt-3">{stats.participants}</p>{" "}
-        </div>
-
-        <div className="bg-slate-900 p-6 rounded-xl">
-          <h3 className="text-gray-400">AI Notes</h3>
-          <p className="text-4xl font-bold mt-3">18</p>
-        </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="mt-10">
-        <h3 className="text-2xl font-bold mb-4">Quick Actions</h3>
-
-        <div className="flex gap-4">
-          <button
-            onClick={() =>
-              navigate("/create-meeting", {
-                state: { from: "/dashboard" },
-              })
-            }
-            className="bg-cyan-500 px-6 py-3 rounded-xl"
+        {/* Stats Cards */}
+        <div className="grid md:grid-cols-4 gap-6">
+          <div
+            className={`p-6 rounded-xl ${
+              theme === "dark"
+                ? "bg-slate-900 text-white"
+                : "bg-gray-100 text-black"
+            }`}
           >
-            Create Meeting
-          </button>
-
-          <button
-            onClick={() =>
-              navigate("/join-meeting", {
-                state: { from: "/dashboard" },
-              })
-            }
-            className="border border-cyan-400 px-6 py-3 rounded-xl"
-          >
-            Join Meeting
-          </button>
-
-          <button
-            onClick={() => navigate("/schedule-meeting")}
-            className="bg-green-500 px-6 py-3 rounded-xl"
-          >
-            Schedule Meeting
-          </button>
-          <button
-            onClick={() => navigate("/meeting-history")}
-            className="border border-cyan-400 px-6 py-3 rounded-xl hover:bg-cyan-400 hover:text-black transition"
-          >
-            History
-          </button>
-        </div>
-      </div>
-
-      {/* Recent Meetings */}
-      <div className="mt-12">
-        <h3 className="text-2xl font-bold mb-4">Recent Meetings</h3>
-
-        <div className="bg-slate-900 rounded-xl overflow-hidden">
-          <table className="w-full">
-            <thead className="bg-slate-800">
-              <tr>
-                <th className="p-4 text-left">Meeting</th>
-                <th className="p-4 text-left">Date</th>
-                <th className="p-4 text-left">Status</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              {meetings.map((meeting) => (
-                <tr key={meeting._id} className="border-t border-slate-800">
-                  <td className="p-4">{meeting.title}</td>
-
-                  <td className="p-4">
-                    {new Date(meeting.createdAt).toLocaleDateString()}
-                  </td>
-
-                  <td className="p-4 text-yellow-400">{meeting.status}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* AI Notes */}
-      <div className="mt-12">
-        <h3 className="text-2xl font-bold mb-4">AI Generated Summaries</h3>
-
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="bg-slate-900 p-5 rounded-xl">
-            <h4 className="font-bold mb-2">Team Meeting Summary</h4>
-
-            <p className="text-gray-400">
-              Discussed project milestones and task assignments.
+            <h3 className="text-gray-400">
+              {t("totalMeetings")}
+            </h3>
+            <p className="text-4xl font-bold mt-3">
+              {stats.totalMeetings}
             </p>
           </div>
 
-          <div className="bg-slate-900 p-5 rounded-xl">
-            <h4 className="font-bold mb-2">Client Discussion</h4>
-
-            <p className="text-gray-400">
-              Finalized requirements and delivery timeline.
+          <div
+            className={`p-6 rounded-xl ${
+              theme === "dark"
+                ? "bg-slate-900 text-white"
+                : "bg-gray-100 text-black"
+            }`}
+          >
+            <h3 className="text-gray-400">
+              {t("liveMeetings")}
+            </h3>
+            <p className="text-4xl font-bold mt-3">
+              {stats.liveMeetings}
             </p>
+          </div>
+
+          <div
+            className={`p-6 rounded-xl ${
+              theme === "dark"
+                ? "bg-slate-900 text-white"
+                : "bg-gray-100 text-black"
+            }`}
+          >
+            <h3 className="text-gray-400">
+              {t("participants")}
+            </h3>
+            <p className="text-4xl font-bold mt-3">
+              {stats.participants}
+            </p>
+          </div>
+
+          <div
+            className={`p-6 rounded-xl ${
+              theme === "dark"
+                ? "bg-slate-900 text-white"
+                : "bg-gray-100 text-black"
+            }`}
+          >
+            <h3 className="text-gray-400">
+              {t("aiNotes")}
+            </h3>
+            <p className="text-4xl font-bold mt-3">
+              18
+            </p>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="mt-10">
+          <h3 className="text-2xl font-bold mb-4">
+            {t("quickActions")}
+          </h3>
+
+          <div className="flex flex-col md:flex-row gap-4">
+            <button
+              onClick={() =>
+                navigate("/create-meeting", {
+                  state: { from: "/dashboard" },
+                })
+              }
+              className="bg-cyan-500 px-6 py-3 rounded-xl text-white"
+            >
+              {t("createMeeting")}
+            </button>
+
+            <button
+              onClick={() =>
+                navigate("/join-meeting", {
+                  state: { from: "/dashboard" },
+                })
+              }
+              className="border border-cyan-400 px-6 py-3 rounded-xl"
+            >
+              {t("joinMeeting")}
+            </button>
+
+            <button
+              onClick={() => navigate("/schedule-meeting")}
+              className="bg-green-500 px-6 py-3 rounded-xl text-white"
+            >
+              {t("scheduleMeeting")}
+            </button>
+
+            <button
+              onClick={() => navigate("/meeting-history")}
+              className="border border-cyan-400 px-6 py-3 rounded-xl hover:bg-cyan-400 hover:text-black transition"
+            >
+              {t("history")}
+            </button>
+          </div>
+        </div>
+
+        {/* Recent Meetings */}
+        <div className="mt-12">
+          <h3 className="text-2xl font-bold mb-4">
+            {t("recentMeetings")}
+          </h3>
+
+          <div
+            className={`rounded-xl overflow-x-auto ${
+              theme === "dark"
+                ? "bg-slate-900 text-white"
+                : "bg-gray-100 text-black"
+            }`}
+          >
+            <table className="w-full">
+              <thead
+                className={
+                  theme === "dark"
+                    ? "bg-slate-800"
+                    : "bg-gray-200"
+                }
+              >
+                <tr>
+                  <th className="p-4 text-left">
+                    {t("meeting")}
+                  </th>
+                  <th className="p-4 text-left">
+                    {t("date")}
+                  </th>
+                  <th className="p-4 text-left">
+                    {t("status")}
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {meetings.map((meeting) => (
+                  <tr
+                    key={meeting._id}
+                    className={`border-t ${
+                      theme === "dark"
+                        ? "border-slate-800"
+                        : "border-gray-300"
+                    }`}
+                  >
+                    <td className="p-4">
+                      {meeting.title}
+                    </td>
+
+                    <td className="p-4">
+                      {new Date(
+                        meeting.createdAt
+                      ).toLocaleDateString()}
+                    </td>
+
+                    <td className="p-4 text-yellow-500">
+                      {meeting.status}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* AI Notes */}
+        <div className="mt-12">
+          <h3 className="text-2xl font-bold mb-4">
+            {t("aiGeneratedSummaries")}
+          </h3>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <div
+              className={`p-5 rounded-xl ${
+                theme === "dark"
+                  ? "bg-slate-900 text-white"
+                  : "bg-gray-100 text-black"
+              }`}
+            >
+              <h4 className="font-bold mb-2">
+                {t("teamMeetingSummary")}
+              </h4>
+
+              <p
+                className={
+                  theme === "dark"
+                    ? "text-gray-400"
+                    : "text-gray-600"
+                }
+              >
+                {t("teamMeetingText")}
+              </p>
+            </div>
+
+            <div
+              className={`p-5 rounded-xl ${
+                theme === "dark"
+                  ? "bg-slate-900 text-white"
+                  : "bg-gray-100 text-black"
+              }`}
+            >
+              <h4 className="font-bold mb-2">
+                {t("clientDiscussion")}
+              </h4>
+
+              <p
+                className={
+                  theme === "dark"
+                    ? "text-gray-400"
+                    : "text-gray-600"
+                }
+              >
+                {t("clientDiscussionText")}
+              </p>
+            </div>
           </div>
         </div>
       </div>

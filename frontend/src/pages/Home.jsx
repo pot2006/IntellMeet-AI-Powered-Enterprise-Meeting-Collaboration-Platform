@@ -11,6 +11,11 @@ function Home() {
   const { theme } = useTheme();
   const { t } = useTranslation();
 
+  const pricingCardClass =
+    theme === "dark"
+      ? "bg-slate-900 border-slate-700 text-white"
+      : "bg-gray-100 border-gray-300 text-black";
+
   return (
     <div
       className={`min-h-screen ${
@@ -22,23 +27,23 @@ function Home() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="flex flex-col items-center justify-center text-center px-6 pt-32">
-        <h1 className="text-4xl md:text-6xl font-bold">
+      <section className="flex flex-col items-center justify-center text-center px-6 pt-20 md:pt-32">
+        <h1 className="text-2xl sm:text-3xl md:text-6xl font-bold leading-tight">
           {t("title")}
         </h1>
 
-        <p className="mt-6 text-lg md:text-xl text-gray-400 max-w-2xl">
+        <p className="mt-4 text-base md:text-xl text-gray-400 max-w-2xl px-4">
           {t("subtitle")}
         </p>
 
-        <div className="mt-10 flex flex-col sm:flex-row gap-4">
+        <div className="mt-8 flex flex-col sm:flex-row gap-3">
           <button
             onClick={() =>
               navigate("/create-meeting", {
                 state: { from: "/" },
               })
             }
-            className="bg-cyan-500 hover:bg-cyan-600 px-6 py-3 rounded-xl font-semibold"
+            className="bg-cyan-500 hover:bg-cyan-600 px-5 py-2.5 rounded-xl font-semibold transition duration-300"
           >
             {t("createMeeting")}
           </button>
@@ -49,7 +54,7 @@ function Home() {
                 state: { from: "/" },
               })
             }
-            className="border border-white px-6 py-3 rounded-xl hover:bg-white hover:text-black transition"
+            className="border border-white px-5 py-2.5 rounded-xl hover:bg-white hover:text-black transition duration-300"
           >
             {t("joinMeeting")}
           </button>
@@ -58,87 +63,98 @@ function Home() {
         <img
           src={hero}
           alt="AI Meeting"
-          className="w-full max-w-[450px] mt-10 rounded-2xl shadow-2xl"
+          className="w-full max-w-[220px] md:max-w-[450px] mt-8 md:mt-10 rounded-2xl shadow-2xl"
         />
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 px-8">
-        <h2 className="text-5xl font-bold text-center mb-12">
+      <section
+        id="features"
+        className="py-14 md:py-20 px-6 md:px-8"
+      >
+        <h2 className="text-3xl md:text-5xl font-bold text-center mb-10 md:mb-12">
           {t("features")}
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
           <FeatureCard
             icon="🎥"
-            title="HD Video Meetings"
-            description="Host high quality video meetings with crystal clear audio."
+            title={t("hdVideoMeetings")}
+            description={t("hdVideoMeetingsDesc")}
           />
 
           <FeatureCard
             icon="🤖"
-            title="AI Summaries"
-            description="Get automatic AI generated meeting notes and key points."
+            title={t("aiSummariesTitle")}
+            description={t("aiSummariesDesc")}
           />
 
           <FeatureCard
             icon="📹"
-            title="Meeting Recordings"
-            description="Record meetings and watch them anytime later."
+            title={t("meetingRecordingsTitle")}
+            description={t("meetingRecordingsDesc")}
           />
 
           <FeatureCard
             icon="👥"
-            title="Team Collaboration"
-            description="Collaborate with your team in real time."
+            title={t("teamCollaborationTitle")}
+            description={t("teamCollaborationDesc")}
           />
 
           <FeatureCard
             icon="🔒"
-            title="Secure Meetings"
-            description="End-to-end secure meetings with protected access."
+            title={t("secureMeetingsTitle")}
+            description={t("secureMeetingsDesc")}
           />
 
           <FeatureCard
             icon="📅"
-            title="Schedule Meetings"
-            description="Schedule meetings in advance and manage them easily."
+            title={t("scheduleMeetingsTitle")}
+            description={t("scheduleMeetingsDesc")}
           />
         </div>
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-24 px-8 text-center">
-        <h2 className="text-4xl font-bold">
+      <section
+        id="about"
+        className="pt-14 pb-8 md:py-24 px-6 md:px-8 text-center"
+      >
+        <h2 className="text-3xl md:text-4xl font-bold">
           {t("aboutTitle")}
         </h2>
 
         <p className="mt-6 text-gray-400 max-w-3xl mx-auto">
-          IntelliMeet is an AI-powered meeting platform that helps teams
-          collaborate effectively through video meetings, automated summaries
-          and smart productivity tools.
+          {t("aboutText")}
         </p>
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-24 px-8 text-center">
-        <h2 className="text-5xl font-bold mb-16">
+      <section
+        id="pricing"
+        className="py-14 md:py-24 px-6 md:px-8 text-center"
+      >
+        <h2 className="text-3xl md:text-5xl font-bold mb-10 md:mb-16">
           {t("pricingPlans")}
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-8 max-w-6xl mx-auto">
 
           {/* Basic Plan */}
-          <div className="bg-slate-900 p-8 rounded-3xl border border-slate-700">
-            <h3 className="text-3xl font-bold">
+          <div className={`${pricingCardClass} p-5 md:p-8 rounded-3xl border`}>
+            <h3 className="text-2xl md:text-3xl font-bold">
               {t("basic")}
             </h3>
 
-            <p className="text-6xl font-bold mt-6">
+            <p className="text-4xl md:text-6xl font-bold mt-4">
               {t("free")}
             </p>
 
-            <ul className="mt-8 space-y-4 text-gray-300">
+            <ul
+              className={`mt-6 space-y-3 ${
+                theme === "dark" ? "text-gray-300" : "text-gray-700"
+              }`}
+            >
               <li>✓ {t("fiveMeetings")}</li>
               <li>✓ {t("hdVideoCalls")}</li>
               <li>✓ {t("chatSupport")}</li>
@@ -146,31 +162,30 @@ function Home() {
 
             <button
               onClick={() => navigate("/register")}
-              className="mt-8 bg-cyan-400 text-black px-6 py-3 rounded-xl w-full font-semibold"
+              className="mt-6 bg-cyan-400 text-black px-6 py-3 rounded-xl w-full font-semibold transition duration-300"
             >
               {t("getStarted")}
             </button>
           </div>
 
           {/* Pro Plan */}
-          <div className="bg-cyan-500 p-8 rounded-3xl scale-105 shadow-2xl relative">
-
+          <div className="bg-cyan-500 p-5 md:p-8 rounded-3xl scale-100 md:scale-105 shadow-2xl relative">
             <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-yellow-400 text-black px-4 py-1 rounded-full text-sm font-bold">
               {t("mostPopular")}
             </div>
 
-            <h3 className="text-3xl font-bold">
+            <h3 className="text-2xl md:text-3xl font-bold">
               {t("pro")}
             </h3>
 
-            <p className="text-6xl font-bold mt-6">
+            <p className="text-4xl md:text-6xl font-bold mt-4">
               ₹299
-              <span className="text-lg">
+              <span className="text-base md:text-lg ml-1">
                 {t("month")}
               </span>
             </p>
 
-            <ul className="mt-8 space-y-4">
+            <ul className="mt-6 space-y-3">
               <li>✓ {t("unlimitedMeetings")}</li>
               <li>✓ {t("aiSummaries")}</li>
               <li>✓ {t("recordings")}</li>
@@ -179,26 +194,30 @@ function Home() {
 
             <button
               onClick={() => navigate("/register")}
-              className="mt-8 bg-white text-black px-6 py-3 rounded-xl w-full font-semibold"
+              className="mt-6 bg-white text-black px-6 py-3 rounded-xl w-full font-semibold transition duration-300"
             >
               {t("choosePlan")}
             </button>
           </div>
 
           {/* Enterprise */}
-          <div className="bg-slate-900 p-8 rounded-3xl border border-slate-700">
-            <h3 className="text-3xl font-bold">
+          <div className={`${pricingCardClass} p-5 md:p-8 rounded-3xl border`}>
+            <h3 className="text-2xl md:text-3xl font-bold">
               {t("enterprise")}
             </h3>
 
-            <p className="text-6xl font-bold mt-6">
+            <p className="text-4xl md:text-6xl font-bold mt-4">
               ₹999
-              <span className="text-lg">
+              <span className="text-base md:text-lg ml-1">
                 {t("month")}
               </span>
             </p>
 
-            <ul className="mt-8 space-y-4 text-gray-300">
+            <ul
+              className={`mt-6 space-y-3 ${
+                theme === "dark" ? "text-gray-300" : "text-gray-700"
+              }`}
+            >
               <li>✓ {t("unlimitedUsers")}</li>
               <li>✓ {t("aiAnalytics")}</li>
               <li>✓ {t("prioritySupport")}</li>
@@ -207,7 +226,7 @@ function Home() {
 
             <button
               onClick={() => navigate("/contact")}
-              className="mt-8 bg-cyan-400 text-black px-6 py-3 rounded-xl w-full font-semibold"
+              className="mt-6 bg-cyan-400 text-black px-6 py-3 rounded-xl w-full font-semibold transition duration-300"
             >
               {t("contactSales")}
             </button>
