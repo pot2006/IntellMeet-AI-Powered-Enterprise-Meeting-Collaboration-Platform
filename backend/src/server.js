@@ -7,6 +7,7 @@ import connectDB from "./config/db.js";
 
 import http from "http";
 import { Server } from "socket.io";
+import Meeting from "./models/Meeting.js";
 
 const PORT = process.env.PORT || 5000;
 
@@ -48,7 +49,7 @@ io.on("connection", (socket) => {
   //
   // This replaces the old "room size === 2 -> emit ready to first user"
   // logic, which only ever worked for exactly 2 participants.
-  socket.on("joinRoom", (roomId, userInfo) => {
+  socket.on("joinRoom", async (roomId, userInfo) => {
     const existing = getOtherSocketIds(roomId, socket.id);
 
     if (existing.length >= MAX_PARTICIPANTS_PER_ROOM) {
@@ -59,6 +60,17 @@ io.on("connection", (socket) => {
     socket.join(roomId);
     socket.data.roomId = roomId;
     socket.data.userInfo = userInfo || null;
+    const meeting = await Meeting.findById(roomId);
+
+    if (meeting && meeting.status === "Scheduled") {
+      meeting.status = "Live";
+
+      meeting.startedAt = new Date();
+
+      await meeting.save();
+
+      console.log("Meeting Started");
+    }
 
     console.log(`${socket.id} joined ${roomId} (${existing.length} existing)`);
 
@@ -116,16 +128,41 @@ io.on("connection", (socket) => {
   });
 
   // ---- Disconnect ----
-  socket.on("disconnect", () => {
+  // ---- Disconnect ----
+
+  socket.on("disconnect", async () => {
     console.log("User Disconnected:", socket.id);
 
-    if (socket.data.roomId) {
-      // Tell everyone else in the room this peer is gone, so each of
-      // them can close their specific RTCPeerConnection for this
-      // socketId and remove its video tile.
-      socket.to(socket.data.roomId).emit("peerLeft", {
+    const roomId = socket.data.roomId;
+
+    if (roomId) {
+      socket.to(roomId).emit("peerLeft", {
         socketId: socket.id,
       });
+
+      const clients = io.sockets.adapter.rooms.get(roomId);
+
+      const remaining = clients ? clients.size : 0;
+
+      console.log("Remaining:", remaining);
+
+      if (remaining === 0) {
+        const meeting = await Meeting.findById(roomId);
+
+        if (meeting && meeting.startedAt && meeting.status !== "Completed") {
+          meeting.endedAt = new Date();
+
+          meeting.duration = Math.floor(
+            (meeting.endedAt - meeting.startedAt) / (1000 * 60),
+          );
+
+          meeting.status = "Completed";
+
+          await meeting.save();
+
+          console.log("Meeting Completed");
+        }
+      }
     }
   });
 });

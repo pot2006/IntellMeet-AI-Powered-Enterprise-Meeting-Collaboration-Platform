@@ -36,6 +36,37 @@ const meetingSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
+    scheduledAt: {
+      type: Date,
+      default: Date.now,
+    },
+
+    startedAt: {
+      type: Date,
+    },
+
+    endedAt: {
+      type: Date,
+    },
+
+    duration: {
+      type: Number,
+      default: 0,
+    },
+    recordingUrl: {
+      type: String,
+      default: "",
+    },
+
+    isRecorded: {
+      type: Boolean,
+      default: false,
+    },
+
+    aiSummary: {
+      type: String,
+      default: "",
+    },
   },
   {
     timestamps: true,
