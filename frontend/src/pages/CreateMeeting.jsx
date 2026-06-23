@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import API from "../services/api";
 
 function CreateMeeting() {
@@ -15,7 +17,7 @@ function CreateMeeting() {
 
   const [meetingTitle, setMeetingTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [meetingDate, setMeetingDate] = useState("");
+  const [meetingDate, setMeetingDate] = useState(new Date());
   const [meetingType, setMeetingType] = useState("Private");
 
   const handleCreateMeeting = async () => {
@@ -28,6 +30,8 @@ function CreateMeeting() {
       const res = await API.post("/meetings", {
         title: meetingTitle,
         description,
+        date: meetingDate,
+        type: meetingType
       });
 
       navigate("/meetingroom", {
@@ -69,11 +73,15 @@ function CreateMeeting() {
         />
 
         {/* Date & Time */}
-        <input
-          type="datetime-local"
-          value={meetingDate}
-          onChange={(e) => setMeetingDate(e.target.value)}
-          className="w-full p-3 rounded-lg bg-slate-800 border border-slate-700 text-white mb-4 focus:outline-none focus:border-cyan-500"
+        <DatePicker
+          selected={meetingDate}
+          onChange={(date) => setMeetingDate(date)}
+          showTimeSelect
+          timeFormat="HH:mm"
+          timeIntervals={1}
+          dateFormat="dd-MM-yyyy HH:mm"
+          shouldCloseOnSelect
+          className="w-full p-3 rounded-lg bg-slate-800 border border-slate-700 text-white mb-4"
         />
 
         {/* Meeting Type */}

@@ -21,7 +21,9 @@ export const getDashboardStats = async (req, res) => {
       status: "Live",
     });
 
-    const meetings = await Meeting.find(baseFilter);
+    const meetings = await Meeting.find(baseFilter)
+      .sort({ createdAt: -1 })
+      .limit(8);
 
     const participants = meetings.reduce(
       (total, meeting) => total + meeting.participants.length,

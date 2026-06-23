@@ -97,7 +97,7 @@ function Recording() {
         <h1 className="text-4xl font-bold">🎥 Meeting Recording</h1>
 
         <button
-          onClick={() => navigate("/dashboard")}
+          onClick={() => navigate("/meeting-history")}
           className="bg-cyan-500 hover:bg-cyan-600 px-5 py-2 rounded-lg"
         >
           Back

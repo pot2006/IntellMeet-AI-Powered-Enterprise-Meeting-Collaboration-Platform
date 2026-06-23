@@ -240,7 +240,10 @@ function Dashboard() {
               </thead>
 
               <tbody>
-                {meetings.map((meeting) => (
+                { 
+                meetings
+                .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                .slice(0, 8).map((meeting) => (
                   <tr
                     key={meeting._id}
                     className={`border-t ${
