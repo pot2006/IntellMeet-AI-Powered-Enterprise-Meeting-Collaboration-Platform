@@ -8,7 +8,6 @@ function JoinMeeting() {
 
   const [meetingCode, setMeetingCode] = useState("");
 
-  // User Home se aaya ya Dashboard se
   const from = location.state?.from || "/dashboard";
 
   const handleJoin = async () => {
@@ -20,10 +19,6 @@ function JoinMeeting() {
     }
 
     try {
-      // FIX: send the uppercased, trimmed code. generateMeetingCode() on
-      // the backend always produces uppercase alphanumeric codes, so
-      // normalizing here means what's typed/pasted (including stray
-      // whitespace or lowercase letters) still matches.
       const res = await API.post("/meetings/join", {
         code: trimmedCode.toUpperCase(),
       });
@@ -31,6 +26,11 @@ function JoinMeeting() {
       navigate("/meetingroom", {
         state: {
           meeting: res.data,
+          // FIX: same bug as CreateMeeting.jsx — without forwarding
+          // `from` here, MeetingRoom's "Leave call" always fell back to
+          // /dashboard regardless of whether the user started from Home,
+          // Dashboard, or anywhere else.
+          from,
         },
       });
     } catch (error) {

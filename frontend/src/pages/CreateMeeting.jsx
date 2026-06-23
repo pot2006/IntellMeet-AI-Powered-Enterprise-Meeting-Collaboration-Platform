@@ -1,9 +1,17 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import API from "../services/api";
 
 function CreateMeeting() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // FIX: Home.jsx (and any other page) passes `from` so MeetingRoom
+  // knows where "Leave call" should return to. CreateMeeting was never
+  // reading this value, so it never made it into the navigate() call
+  // below — MeetingRoom's `location.state?.from || "/dashboard"`
+  // fallback always won, regardless of where the user actually started.
+  const fromPage = location.state?.from || "/dashboard";
 
   const [meetingTitle, setMeetingTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -27,6 +35,8 @@ function CreateMeeting() {
           meetingId: res.data._id,
           meetingTitle: res.data.title,
           description: res.data.description,
+          // FIX: forward the original origin page through to MeetingRoom.
+          from: fromPage,
         },
       });
     } catch (error) {

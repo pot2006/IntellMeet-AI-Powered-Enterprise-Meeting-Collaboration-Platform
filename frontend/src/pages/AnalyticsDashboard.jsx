@@ -1,11 +1,33 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { useTheme } from "../context/ThemeContext";
 import { useTranslation } from "react-i18next";
+import API from "../services/api";
 
 function AnalyticsDashboard() {
   const navigate = useNavigate();
   const { theme } = useTheme();
   const { t } = useTranslation();
+
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        const res = await API.get("/analytics/stats");
+        setData(res.data);
+      } catch (err) {
+        console.log(err);
+        setError(err.response?.data?.message || "Failed to load analytics");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAnalytics();
+  }, []);
 
   const cardClass =
     theme === "dark"
@@ -16,14 +38,59 @@ function AnalyticsDashboard() {
 
   const progressClass = theme === "dark" ? "bg-slate-700" : "bg-gray-300";
 
+  const wrapperClass = `min-h-screen p-4 md:p-8 ${
+    theme === "dark" ? "bg-slate-950 text-white" : "bg-white text-black"
+  }`;
+
+  if (loading) {
+    return (
+      <div className={`${wrapperClass} flex items-center justify-center`}>
+        Loading analytics...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div
+        className={`${wrapperClass} flex flex-col items-center justify-center gap-4`}
+      >
+        <p className="text-red-400">{error}</p>
+        <button
+          onClick={() => navigate("/dashboard")}
+          className="bg-cyan-500 hover:bg-cyan-600 px-5 py-2 rounded-lg"
+        >
+          {t("dashboard")}
+        </button>
+      </div>
+    );
+  }
+
+  // Bar chart heights are scaled relative to the largest monthly count
+  // in the real data, instead of fixed pixel heights.
+  const maxMonthlyCount = Math.max(
+    1,
+    ...data.monthlyMeetingCounts.map((m) => m.count),
+  );
+
+  const activityIcon = (entry) => {
+    if (entry.hasAiSummary) return "🤖";
+    if (entry.isRecorded) return "🎥";
+    if (entry.status === "Completed") return "✅";
+    if (entry.status === "Live") return "🔴";
+    return "📅";
+  };
+
+  const activityLabel = (entry) => {
+    if (entry.hasAiSummary) return `AI summary ready — ${entry.title}`;
+    if (entry.isRecorded) return `Recording available — ${entry.title}`;
+    if (entry.status === "Completed") return `Completed — ${entry.title}`;
+    if (entry.status === "Live") return `Live now — ${entry.title}`;
+    return `Scheduled — ${entry.title}`;
+  };
+
   return (
-    <div
-      className={`min-h-screen p-4 md:p-8 ${
-        theme === "dark"
-          ? "bg-slate-950 text-white"
-          : "bg-white text-black"
-      }`}
-    >
+    <div className={wrapperClass}>
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-10">
         <div>
@@ -44,50 +111,73 @@ function AnalyticsDashboard() {
         </button>
       </div>
 
-      {/* Stats Cards */}
+      {/* Stats Cards — every number below comes from the user's real
+          meeting data. Cards with no real backing (satisfaction score,
+          languages used, meeting categories) have been removed rather
+          than shown with invented numbers. */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
         <div className={`${cardClass} p-6 rounded-xl`}>
           <p className="text-slate-400">📅 {t("totalMeetings")}</p>
-          <h2 className="text-4xl font-bold text-cyan-400 mt-2">52</h2>
+          <h2 className="text-4xl font-bold text-cyan-400 mt-2">
+            {data.totalMeetings}
+          </h2>
         </div>
 
         <div className={`${cardClass} p-6 rounded-xl`}>
           <p className="text-slate-400">⏱ {t("meetingHours")}</p>
-          <h2 className="text-4xl font-bold text-green-400 mt-2">124</h2>
+          <h2 className="text-4xl font-bold text-green-400 mt-2">
+            {Math.round(data.totalMeetingMinutes / 60)}
+          </h2>
         </div>
 
         <div className={`${cardClass} p-6 rounded-xl`}>
-          <p className="text-slate-400">👥 {t("activeUsers")}</p>
-          <h2 className="text-4xl font-bold text-yellow-400 mt-2">18</h2>
+          <p className="text-slate-400">🔴 {t("liveMeetings") || "Live Now"}</p>
+          <h2 className="text-4xl font-bold text-yellow-400 mt-2">
+            {data.liveMeetings}
+          </h2>
         </div>
 
         <div className={`${cardClass} p-6 rounded-xl`}>
           <p className="text-slate-400">🤖 {t("aiSummaries")}</p>
-          <h2 className="text-4xl font-bold text-purple-400 mt-2">47</h2>
+          <h2 className="text-4xl font-bold text-purple-400 mt-2">
+            {data.aiSummariesCount}
+          </h2>
         </div>
 
         <div className={`${cardClass} p-6 rounded-xl`}>
-          <p className="text-slate-400">📌 {t("upcomingMeetings")}</p>
-          <h2 className="text-4xl font-bold text-orange-400 mt-2">12</h2>
+          <p className="text-slate-400">
+            📌 {t("scheduledMeetings") || "Scheduled"}
+          </p>
+          <h2 className="text-4xl font-bold text-orange-400 mt-2">
+            {data.scheduledMeetings}
+          </h2>
         </div>
 
         <div className={`${cardClass} p-6 rounded-xl`}>
           <p className="text-slate-400">🎥 {t("recordings")}</p>
-          <h2 className="text-4xl font-bold text-red-400 mt-2">35</h2>
+          <h2 className="text-4xl font-bold text-red-400 mt-2">
+            {data.recordingsCount}
+          </h2>
         </div>
 
         <div className={`${cardClass} p-6 rounded-xl`}>
-          <p className="text-slate-400">🌐 {t("languagesUsed")}</p>
-          <h2 className="text-4xl font-bold text-pink-400 mt-2">4</h2>
+          <p className="text-slate-400">✅ {t("completed")}</p>
+          <h2 className="text-4xl font-bold text-green-400 mt-2">
+            {data.completedMeetings}
+          </h2>
         </div>
 
         <div className={`${cardClass} p-6 rounded-xl`}>
-          <p className="text-slate-400">⭐ {t("satisfaction")}</p>
-          <h2 className="text-4xl font-bold text-green-400 mt-2">98%</h2>
+          <p className="text-slate-400">⏳ {t("avgDuration")}</p>
+          <h2 className="text-4xl font-bold text-pink-400 mt-2">
+            {data.avgDurationMinutes}m
+          </h2>
         </div>
       </div>
 
-      {/* Progress Section */}
+      {/* Completion Rate — the only progress bar kept, since it's the
+          only one with a real ratio behind it (completed / total). The
+          old "AI Usage Rate" bar had no real definition, so it's gone. */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
         <div className={`${cardClass} p-6 rounded-xl`}>
           <h2 className="text-xl font-bold mb-4">
@@ -96,149 +186,98 @@ function AnalyticsDashboard() {
 
           <div className={`w-full ${progressClass} rounded-full h-5`}>
             <div
-              className="bg-green-500 h-5 rounded-full"
-              style={{ width: "85%" }}
+              className="bg-green-500 h-5 rounded-full transition-all duration-500"
+              style={{ width: `${data.completionRate}%` }}
             />
           </div>
 
           <p className="mt-3 text-green-400">
-            85% {t("completed")}
+            {data.completionRate}% {t("completed")}
           </p>
         </div>
 
-        <div className={`${cardClass} p-6 rounded-xl`}>
-          <h2 className="text-xl font-bold mb-4">
-            {t("aiUsageRate")}
-          </h2>
-
-          <div className={`w-full ${progressClass} rounded-full h-5`}>
-            <div
-              className="bg-cyan-500 h-5 rounded-full"
-              style={{ width: "92%" }}
-            />
-          </div>
-
-          <p className="mt-3 text-cyan-400">
-            92% {t("usage")}
-          </p>
-        </div>
-      </div>
-
-      {/* Analytics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-        <div className={`${cardClass} p-6 rounded-xl`}>
-          <h3 className="text-lg font-semibold mb-2">
-            {t("mostActiveUser")}
-          </h3>
-
+        <div
+          className={`${cardClass} p-6 rounded-xl flex flex-col justify-center`}
+        >
+          <h3 className="text-lg font-semibold mb-2">{t("mostActiveUser")}</h3>
           <p className="text-cyan-400 text-2xl">
-            Vimal Kumar
+            {data.mostActiveCollaborator || "—"}
           </p>
-        </div>
-
-        <div className={`${cardClass} p-6 rounded-xl`}>
-          <h3 className="text-lg font-semibold mb-2">
-            {t("avgDuration")}
-          </h3>
-
-          <p className="text-green-400 text-2xl">
-            42 {t("minutes")}
-          </p>
-        </div>
-
-        <div className={`${cardClass} p-6 rounded-xl`}>
-          <h3 className="text-lg font-semibold mb-2">
-            {t("successRate")}
-          </h3>
-
-          <p className="text-yellow-400 text-2xl">
-            98%
-          </p>
+          {!data.mostActiveCollaborator && (
+            <p className="text-slate-500 text-sm mt-2">
+              Not enough multi-participant meetings yet.
+            </p>
+          )}
         </div>
       </div>
 
-      {/* Monthly Meetings */}
+      {/* Monthly Meetings — real per-month counts, last 6 months,
+          including zero-count months so gaps are visible rather than
+          hidden. */}
       <div className={`${cardClass} p-6 rounded-xl mb-10 overflow-x-auto`}>
-        <h2 className="text-2xl font-bold mb-6">
-          {t("monthlyMeetings")}
-        </h2>
+        <h2 className="text-2xl font-bold mb-6">{t("monthlyMeetings")}</h2>
 
-        <div className="grid grid-cols-6 gap-4 items-end h-52 min-w-[400px]">
-          <div className="bg-cyan-500 h-20 rounded"></div>
-          <div className="bg-cyan-500 h-28 rounded"></div>
-          <div className="bg-cyan-500 h-40 rounded"></div>
-          <div className="bg-cyan-500 h-24 rounded"></div>
-          <div className="bg-cyan-500 h-48 rounded"></div>
-          <div className="bg-cyan-500 h-36 rounded"></div>
-        </div>
+        {data.totalMeetings === 0 ? (
+          <p className="text-slate-500">No meetings yet to chart.</p>
+        ) : (
+          <>
+            <div className="grid grid-cols-6 gap-4 items-end h-52 min-w-[400px]">
+              {data.monthlyMeetingCounts.map((bucket, i) => (
+                <div
+                  key={i}
+                  className="bg-cyan-500 rounded flex items-end justify-center text-xs font-semibold text-slate-950 pb-1"
+                  style={{
+                    height: `${Math.max(
+                      6,
+                      (bucket.count / maxMonthlyCount) * 100,
+                    )}%`,
+                  }}
+                  title={`${bucket.count} meeting${bucket.count === 1 ? "" : "s"}`}
+                >
+                  {bucket.count > 0 && bucket.count}
+                </div>
+              ))}
+            </div>
 
-        <div className="grid grid-cols-6 text-center mt-4 text-slate-400 min-w-[400px]">
-          <span>{t("jan")}</span>
-          <span>{t("feb")}</span>
-          <span>{t("mar")}</span>
-          <span>{t("apr")}</span>
-          <span>{t("may")}</span>
-          <span>{t("jun")}</span>
-        </div>
+            <div className="grid grid-cols-6 text-center mt-4 text-slate-400 min-w-[400px]">
+              {data.monthlyMeetingCounts.map((bucket, i) => (
+                <span key={i}>{bucket.label}</span>
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
-      {/* Categories + Activity */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+      {/* Recent Activity — derived from real recent meetings, not a
+          fabricated activity log. Meeting Categories section removed
+          entirely since there's no category field on the schema. */}
+      <div className="grid grid-cols-1 gap-8 mb-10">
         <div className={`${cardClass} p-6 rounded-xl`}>
-          <h2 className="text-2xl font-bold mb-6">
-            {t("meetingCategories")}
-          </h2>
+          <h2 className="text-2xl font-bold mb-6">{t("recentActivity")}</h2>
 
-          <div className="space-y-4">
-            <p>{t("projectReview")} - 40%</p>
-            <p>{t("teamSync")} - 30%</p>
-            <p>{t("clientCalls")} - 20%</p>
-            <p>{t("training")} - 10%</p>
-          </div>
+          {data.recentActivity.length === 0 ? (
+            <p className="text-slate-500">No recent activity yet.</p>
+          ) : (
+            <div className="space-y-3">
+              {data.recentActivity.map((entry, i) => (
+                <div
+                  key={i}
+                  className={`${activityClass} p-3 rounded flex justify-between items-center`}
+                >
+                  <span>
+                    {activityIcon(entry)} {activityLabel(entry)}
+                  </span>
+                  <span className="text-slate-400 text-sm">
+                    {new Date(entry.createdAt).toLocaleDateString("en-GB", {
+                      day: "numeric",
+                      month: "short",
+                    })}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-
-        <div className={`${cardClass} p-6 rounded-xl`}>
-          <h2 className="text-2xl font-bold mb-6">
-            {t("recentActivity")}
-          </h2>
-
-          <div className="space-y-3">
-            <div className={`${activityClass} p-3 rounded`}>
-              ✅ {t("meetingCreated")}
-            </div>
-
-            <div className={`${activityClass} p-3 rounded`}>
-              🤖 {t("aiSummaryGenerated")}
-            </div>
-
-            <div className={`${activityClass} p-3 rounded`}>
-              🎥 {t("recordingDownloaded")}
-            </div>
-
-            <div className={`${activityClass} p-3 rounded`}>
-              👥 {t("newUserJoined")}
-            </div>
-
-            <div className={`${activityClass} p-3 rounded`}>
-              🌐 {t("languageChanged")}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Buttons */}
-      <div className="flex flex-col sm:flex-row gap-4 flex-wrap">
-        <button className="bg-green-500 hover:bg-green-600 px-6 py-3 rounded-lg transition duration-300">
-          📥 {t("exportReport")}
-        </button>
-
-        <button className="bg-cyan-500 hover:bg-cyan-600 px-6 py-3 rounded-lg transition duration-300">
-          📊 {t("downloadAnalytics")}
-        </button>
-
-        <button className="bg-purple-500 hover:bg-purple-600 px-6 py-3 rounded-lg transition duration-300">
-          📈 {t("generateAIReport")}
-        </button>
       </div>
     </div>
   );

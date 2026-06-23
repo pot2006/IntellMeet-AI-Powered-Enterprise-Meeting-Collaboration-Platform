@@ -136,11 +136,19 @@ function MeetingHistory() {
 
                 <td className="p-4">
                   {meeting.aiSummary ? (
-                    <button className="bg-purple-600 px-3 py-1 rounded-lg">
+                    <button
+                      onClick={() =>
+                        navigate("/ai-summary", { state: { meeting } })
+                      }
+                      className="bg-purple-600 px-3 py-1 rounded-lg"
+                    >
                       View
                     </button>
                   ) : (
-                    <button className="bg-gray-600 px-3 py-1 rounded-lg">
+                    <button
+                      disabled
+                      className="bg-gray-600 px-3 py-1 rounded-lg opacity-60 cursor-not-allowed"
+                    >
                       Pending
                     </button>
                   )}
@@ -148,18 +156,31 @@ function MeetingHistory() {
 
                 <td className="p-4">
                   {meeting.recordingUrl ? (
-                    <button className="bg-red-500 px-3 py-1 rounded-lg">
+                    <button
+                      onClick={() =>
+                        navigate("/recording", { state: { meeting } })
+                      }
+                      className="bg-red-500 px-3 py-1 rounded-lg"
+                    >
                       Watch
                     </button>
                   ) : (
-                    <button className="bg-gray-600 px-3 py-1 rounded-lg">
+                    <button
+                      disabled
+                      className="bg-gray-600 px-3 py-1 rounded-lg opacity-60 cursor-not-allowed"
+                    >
                       N/A
                     </button>
                   )}
                 </td>
 
                 <td className="p-4">
-                  <button className="bg-cyan-500 px-3 py-1 rounded-lg">
+                  <button
+                    onClick={() =>
+                      navigate("/meeting-details", { state: { meeting } })
+                    }
+                    className="bg-cyan-500 px-3 py-1 rounded-lg"
+                  >
                     Details
                   </button>
                 </td>

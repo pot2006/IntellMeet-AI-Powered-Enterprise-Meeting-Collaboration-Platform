@@ -19,12 +19,22 @@ router.get("/", protect, getMyMeetings);
 
 router.get("/history", protect, getMeetingHistory);
 
-router.post(
-  "/:id/recording",
-  protect,
-  upload.single("recording"),
-  uploadRecording,
-);
+// Wraps multer's middleware so that errors it throws (file-type
+// rejection, size-limit exceeded, malformed multipart body) return a
+// clean JSON response instead of falling through to Express's default
+// error handler, which renders a raw HTML stack trace — exactly what
+// was showing up in the browser Network tab as a confusing 500.
+const handleRecordingUpload = (req, res, next) => {
+  upload.single("recording")(req, res, (err) => {
+    if (err) {
+      console.log("Recording upload middleware error:", err.message);
+      return res.status(400).json({ message: err.message });
+    }
+    next();
+  });
+};
+
+router.post("/:id/recording", protect, handleRecordingUpload, uploadRecording);
 
 // Streaming endpoint deliberately does NOT use the `protect` middleware,
 // because a <video> tag's src attribute can't attach an Authorization
