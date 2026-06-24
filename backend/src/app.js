@@ -4,7 +4,7 @@ import helmet from "helmet";
 import meetingRoutes from "./routes/meetingRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
-import analyticsRoutes from "./routes/analyticsRoutes.js";
+import analyticsRoutes from "./routes/AnalyticsRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 const app = express();
 
