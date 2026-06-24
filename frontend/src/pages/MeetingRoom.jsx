@@ -480,11 +480,9 @@ function MeetingRoom() {
   const gridColsClass =
     tileCount <= 1
       ? "grid-cols-1"
-      : tileCount === 2
-        ? "grid-cols-2"
         : tileCount <= 4
           ? "grid-cols-2"
-          : "grid-cols-3";
+          : "grid-cols-2 md:grid-cols-3";
 
   if (roomFullError) {
     return (
@@ -534,13 +532,13 @@ function MeetingRoom() {
       </div>
 
       {/* Main area: video grid + optional side panel */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-auto">
         {/* Video grid */}
         <div
-          className={`flex-1 grid ${gridColsClass} gap-3 p-4 auto-rows-fr content-center`}
+          className={`flex-1 grid ${gridColsClass} gap-2 p-2`}
         >
           {/* Local tile */}
-          <div className="relative bg-[#3c4043] rounded-xl overflow-hidden flex items-center justify-center">
+          <div className="relative bg-[#3c4043] rounded-xl overflow-hidden aspect-video flex items-center justify-center">
             <video
               ref={localVideoRef}
               autoPlay
@@ -571,7 +569,7 @@ function MeetingRoom() {
           {remoteList.map(({ socketId, userInfo, stream, connectionState }) => (
             <div
               key={socketId}
-              className="relative bg-[#3c4043] rounded-xl overflow-hidden flex items-center justify-center"
+              className="relative bg-[#3c4043] rounded-xl overflow-hidden aspect-video flex items-center justify-center"
             >
               {stream ? (
                 <video
@@ -659,7 +657,7 @@ function MeetingRoom() {
       </div>
 
       {/* Bottom Controls — Meet-style floating pill bar */}
-      <div className="flex justify-center items-center gap-3 py-4">
+      <div className="flex justify-center items-center gap-2 py-3 flex-wrap">
         <button
           onClick={toggleMic}
           className={`w-12 h-12 rounded-full flex items-center justify-center text-lg ${
