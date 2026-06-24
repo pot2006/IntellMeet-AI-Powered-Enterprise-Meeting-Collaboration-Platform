@@ -5,7 +5,7 @@ import meetingRoutes from "./routes/meetingRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import analyticsRoutes from "./routes/AnalyticsRoutes.js";
-import Notificationroutes from "./routes/Notificationroutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
 const app = express();
 
 app.use(express.json());
@@ -26,6 +26,6 @@ app.use("/api/dashboard", dashboardRoutes);
 
 app.use("/api/analytics", analyticsRoutes);
 
-app.use("/api/notifications", Notificationroutes);
+app.use("/api/notifications", notificationRoutes);
 
 export default app;
